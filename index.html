@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorteio de Amigo Oculto</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            text-align: center;
+        }
+        input[type="text"], input[type="password"] {
+            width: 80%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="loginContainer">
+        <h2>Login - Amigo Oculto</h2>
+        <p>Insira seu nome para acessar o sorteio:</p>
+        <input type="text" id="nomeLogin" placeholder="Nome" />
+        <button onclick="fazerLogin()">Entrar</button>
+        <p id="erroLogin" style="color: red; display: none;">Nome inválido ou já utilizado. Tente novamente.</p>
+    </div>
+
+    <div class="container" id="sorteioContainer" style="display: none;">
+        <h2>Sorteio de Amigo Oculto</h2>
+        <p>Participantes:</p>
+        <ul id="listaParticipantes">
+            <li>Priscilla</li>
+            <li>Caue</li>
+            <li>Márlon</li>
+            <li>Sara</li>
+            <li>Daniel</li>
+            <li>Daiany</li>
+        </ul>
+        <button onclick="realizarSorteio()">Realizar Sorteio</button>
+        <div id="resultados" class="result" style="display:none;"></div>
+    </div>
+
+    <script>
+        // Lista de participantes autorizados para o login
+        const nomesAutorizados = ["Azul", "Verde", "Vermelho", "Amarelo", "Preto", "Rosa"];
+        const participantes = ["Priscilla", "Caue", "Márlon", "Sara", "Daniel", "Daiany"];
+
+        // Função para verificar se o nome já foi utilizado
+        function nomeJaUsado(nome) {
+            return localStorage.getItem(nome) !== null; // Verifica se o nome está no localStorage
+        }
+
+        function fazerLogin() {
+            const nomeInput = document.getElementById("nomeLogin").value.trim();
+
+            if (!nomesAutorizados.includes(nomeInput)) {
+                // Nome não autorizado
+                document.getElementById("erroLogin").textContent = "Nome inválido. Tente novamente.";
+                document.getElementById("erroLogin").style.display = "block";
+                return;
+            }
+
+            if (nomeJaUsado(nomeInput)) {
+                // Nome já utilizado
+                document.getElementById("erroLogin").textContent = "Este nome já foi utilizado. Tente outro.";
+                document.getElementById("erroLogin").style.display = "block";
+                return;
+            }
+
+            // Login bem-sucedido, mostra o sorteio
+            document.getElementById("loginContainer").style.display = "none";
+            document.getElementById("sorteioContainer").style.display = "block";
+            localStorage.setItem(nomeInput, "utilizado"); // Marca o nome como utilizado
+            localStorage.setItem("nomeUsuario", nomeInput); // Armazena o nome do usuário
+        }
+
+        function realizarSorteio() {
+            const nomeUsuario = localStorage.getItem("nomeUsuario");
+
+            let resultados = {};
+
+            if (nomeUsuario === "Azul") {
+                resultados["Azul"] = "Márlon"; // Se for Azul, sorteia Márlon
+            } else if (nomeUsuario === "Vermelho") {
+                resultados["Vermelho"] = "Priscilla"; // Se for Vermelho, sorteia Priscilla
+            } else if (nomeUsuario === "Amarelo") {
+                resultados["Amarelo"] = "Daniel"; // Se for Amarelo, sorteia Daniel
+            } else if (nomeUsuario === "Preto") {
+                resultados["Preto"] = "Daiany"; // Se for Preto, sorteia Daiany
+            } else {
+                let participantesCopia = [...participantes]; // Cria uma cópia do array para garantir aleatoriedade
+                for (let i = 0; i < participantes.length; i++) {
+                    // Sorteio aleatório, garantindo que o sorteado não seja o próprio
+                    const sorteado = sorteioAleatorio(participantesCopia, participantes[i]);
+                    resultados[participantes[i]] = sorteado;
+                    participantesCopia = participantesCopia.filter(p => p !== sorteado); // Remove o sorteado da lista
+                }
+            }
+
+            mostrarResultados(resultados);
+        }
+
+        function sorteioAleatorio(participantesCopia, excluido) {
+            let sorteado = participantesCopia[Math.floor(Math.random() * participantesCopia.length)];
+            while (sorteado === excluido) {
+                sorteado = participantesCopia[Math.floor(Math.random() * participantesCopia.length)];
+            }
+            return sorteado;
+        }
+
+        function mostrarResultados(resultados) {
+            const divResultados = document.getElementById("resultados");
+            divResultados.innerHTML = "<h3>Resultado do Sorteio:</h3>";
+            for (let chave in resultados) {
+                divResultados.innerHTML += `<p>${chave} tirou: ${resultados[chave]}</p>`;
+            }
+            divResultados.style.display = "block";
+        }
+    </script>
+</body>
+</html>
